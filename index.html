@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlipCheck</title>
+    <meta
+      name="description"
+      content="FlipCheck - 중고거래 상품의 시세와 수익성을 분석해보세요."
+    />
+    <link rel="icon" type="image/png" href="assets/flipcheck-mark.png" />
+    <link rel="stylesheet" href="style.css?v=homepage-search-20261105-2" />
+  </head>
+  <body>
+    <!-- 전역 토스트: 스크립트가 작업 결과와 오류를 짧게 알린다. -->
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <!-- data-view 값은 script.js의 showPage 화면 키와 연결된다. -->
+    <header class="header">
+      <div class="container nav-wrap">
+        <button class="brand" type="button" data-view="home" aria-label="FlipCheck 홈">
+          <img class="brand-mark" src="assets/flipcheck-mark.png" alt="" />
+          <span>FlipCheck</span>
+        </button>
+
+        <button
+          class="mobile-menu-toggle"
+          id="mobileMenuToggle"
+          type="button"
+          aria-label="메뉴 열기"
+          aria-expanded="false"
+          aria-controls="mainNav"
+        >
+          <span></span><span></span><span></span>
+        </button>
+
+        <nav class="nav-menu" id="mainNav" aria-label="메인 메뉴">
+          <button type="button" class="nav-item" data-view="home">홈</button>
+          <button type="button" class="nav-item" data-view="search">상품 검색</button>
+          <button type="button" class="nav-item" data-view="calculator">수익 계산기</button>
+          <button type="button" class="nav-item" data-view="favorites">관심상품</button>
+          <button type="button" class="nav-item login-only" data-view="auth">로그인</button>
+          <button type="button" class="nav-item auth-only hidden" data-view="mypage">마이페이지</button>
+          <button type="button" class="nav-item auth-only hidden" id="logoutButton">로그아웃</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-shell container">
+      <!-- 홈: 상품 검색, 최근 검색, 빠른 검색어. -->
+      <section id="homeSection" class="page-section active">
+        <div class="hero-card">
+          <form id="homeSearchForm" class="search-form hero-search">
+            <label for="homeSearchInput" class="sr-only">상품명 검색</label>
+            <div class="search-input-wrap">
+              <span class="search-icon" aria-hidden="true"></span>
+              <input
+                id="homeSearchInput"
+                type="text"
+                placeholder="어떤 상품을 분석할까요?"
+                autocomplete="off"
+              />
+            </div>
+            <label class="capital-input-wrap" for="homeCapitalInput">
+              <span>보유 자본금</span>
+              <span class="capital-input-control">
+                <input id="homeCapitalInput" type="number" min="0" step="10000" placeholder="예: 500000" inputmode="numeric" />
+                <span>원</span>
+              </span>
+            </label>
+            <button type="submit" class="primary-btn">검색</button>
+          </form>
+        </div>
+
+        <section class="home-recommendations" aria-labelledby="homeRecommendationsHeading">
+          <div class="recommendations-heading">
+            <div>
+              <h2 id="homeRecommendationsHeading">최근 검색 기반 추천</h2>
+              <p>최근 검색어에서 가격이 확인된 매물을 골랐습니다.</p>
+            </div>
+            <span>최대 6개</span>
+          </div>
+          <div id="homeRecommendations" class="recommendation-grid" aria-live="polite">
+            <p class="discovery-empty">최근 검색 매물을 불러오는 중입니다.</p>
+          </div>
+        </section>
+
+        <div class="home-discovery">
+          <section class="discovery-block" aria-labelledby="recentSearchHeading">
+            <div class="discovery-heading">
+              <h2 id="recentSearchHeading">최근 검색</h2>
+              <span>이 기기에 저장됩니다</span>
+            </div>
+            <div id="recentSearches" class="search-chip-list">
+              <p class="discovery-empty">검색한 상품이 여기에 표시됩니다.</p>
+            </div>
+          </section>
+          <section class="discovery-block" aria-labelledby="popularSearchHeading">
+            <div class="discovery-heading">
+              <h2 id="popularSearchHeading">인기 검색</h2>
+              <span>최근 30일 검색량</span>
+            </div>
+            <div id="popularSearches" class="search-chip-list" aria-live="polite">
+              <p class="discovery-empty">최근 검색량을 불러오는 중입니다.</p>
+            </div>
+          </section>
+        </div>
+
+      </section>
+
+      <!-- 검색: API 검색 응답과 시세 요약/매물 카드가 동적으로 삽입된다. -->
+      <section id="searchSection" class="page-section">
+        <div class="section-header">
+          <h2>상품 검색</h2>
+        </div>
+
+        <form id="searchForm" class="search-form search-form-inline">
+          <label for="searchInput" class="sr-only">상품명 검색</label>
+          <div class="search-input-wrap wide">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="상품명을 입력해보세요"
+              autocomplete="off"
+            />
+          </div>
+          <label class="capital-input-wrap" for="searchCapitalInput">
+            <span>보유 자본금</span>
+            <span class="capital-input-control">
+              <input id="searchCapitalInput" type="number" min="0" step="10000" placeholder="예: 500000" inputmode="numeric" />
+              <span>원</span>
+            </span>
+          </label>
+          <button type="submit" class="primary-btn">검색</button>
+        </form>
+
+        <div id="searchResults" class="product-grid" aria-live="polite" aria-busy="false"></div>
+      </section>
+
+      <!-- 상세: 선택된 상품의 시세와 점수를 스크립트가 채운다. -->
+      <section id="detailSection" class="page-section">
+        <div id="productDetailContent"></div>
+      </section>
+
+      <!-- 계산기: 입력 가격과 비용을 이용해 예상 수익을 계산한다. -->
+      <section id="calculatorSection" class="page-section">
+        <div class="section-header">
+          <h2>수익 계산기</h2>
+        </div>
+
+        <div class="panel">
+          <form id="calculatorForm" class="stacked-form">
+            <div class="field-group">
+              <label for="calcFavoriteSelect">관심상품에서 선택</label>
+              <select id="calcFavoriteSelect">
+                <option value="">관심상품을 먼저 추가해주세요.</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label for="calcProductName">상품명</label>
+              <input id="calcProductName" type="text" placeholder="예: iPhone 15 128GB" />
+            </div>
+
+            <div class="field-row two-col">
+              <div class="field-group">
+                <label for="calcBuyPrice">매입 가격</label>
+                <input id="calcBuyPrice" type="number" placeholder="380000" min="1" />
+              </div>
+              <div class="field-group">
+                <label for="calcSellPrice">예상 판매 가격</label>
+                <input id="calcSellPrice" type="number" placeholder="450000" min="0" />
+              </div>
+            </div>
+
+            <p class="field-hint">간편 계산은 수수료·배송비·기타 비용을 0원으로 가정합니다. 비용까지 반영하려면 매물 분석을 이용하세요.</p>
+
+            <button type="submit" class="primary-btn full-width" data-action="submit-calculation">수익 계산하기</button>
+          </form>
+        </div>
+
+        <div id="calculatorSuggestion" class="panel calculator-suggestion hidden" aria-live="polite"></div>
+        <div id="calculatorResult" class="panel result-panel hidden"></div>
+      </section>
+
+      <!-- 관심상품: 로컬 데모 상품과 서버 저장 매물을 함께 표시한다. -->
+      <section id="favoritesSection" class="page-section">
+        <div class="section-header">
+          <h2>관심상품</h2>
+        </div>
+        <div id="favoritesContent" class="product-grid"></div>
+      </section>
+
+      <!-- 인증: 서버 기반 로그인/회원가입 폼을 탭으로 전환한다. -->
+      <section id="authSection" class="page-section">
+        <div class="auth-shell">
+          <div class="auth-box">
+            <div class="auth-tabs">
+              <button type="button" class="tab-button active" data-auth-tab="login">로그인</button>
+              <button type="button" class="tab-button" data-auth-tab="signup">회원가입</button>
+            </div>
+
+            <form id="loginForm" class="auth-form active-auth-form">
+              <div class="field-group">
+                <label for="loginId">아이디</label>
+                <input id="loginId" type="text" autocomplete="username" placeholder="아이디를 입력하세요" />
+              </div>
+              <div class="field-group">
+                <label for="loginPassword">비밀번호</label>
+                <input id="loginPassword" type="password" placeholder="비밀번호를 입력하세요" />
+              </div>
+              <button type="submit" class="primary-btn full-width">로그인</button>
+            </form>
+
+            <form id="signupForm" class="auth-form">
+              <div class="field-group">
+                <label for="signupId">아이디</label>
+                <input id="signupId" type="text" autocomplete="username" placeholder="아이디를 입력하세요" />
+              </div>
+              <div class="field-group">
+                <label for="signupPassword">비밀번호</label>
+                <input id="signupPassword" type="password" placeholder="비밀번호를 입력하세요" />
+              </div>
+              <button type="submit" class="primary-btn full-width">회원가입</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- 분석: 선택한 매물과 입력한 비용으로 서버가 수익성을 계산한다. -->
+      <section id="analysisSection" class="page-section">
+        <div class="section-header">
+          <h2>매물 분석</h2>
+        </div>
+
+        <div class="panel">
+          <form id="analysisForm" class="stacked-form">
+            <div class="field-group">
+              <label for="analysisProductName">상품명</label>
+              <input id="analysisProductName" type="text" placeholder="예: Galaxy S25" />
+            </div>
+
+            <div class="field-row two-col">
+              <div class="field-group">
+                <label for="analysisBuyPrice">매입 가격</label>
+                <input id="analysisBuyPrice" type="number" placeholder="350000" min="1" />
+              </div>
+              <div class="field-group">
+                <label for="analysisSellPrice">내 예상 판매 가격</label>
+                <input id="analysisSellPrice" type="number" placeholder="420000" min="0" />
+              </div>
+            </div>
+            <p class="field-hint">수익성은 예상 판매가에서 입력한 거래 수수료·배송비·기타 비용을 제외해 계산합니다. 검색 중앙값은 등록 가격 참고값이며 완료 거래가가 아닙니다.</p>
+
+            <div class="field-row two-col">
+              <div class="field-group">
+                <label for="analysisTransactionFee">거래 수수료</label>
+                <input id="analysisTransactionFee" type="number" placeholder="0" min="0" required />
+              </div>
+              <div class="field-group">
+                <label for="analysisShippingCost">배송비</label>
+                <input id="analysisShippingCost" type="number" placeholder="0" min="0" required />
+              </div>
+            </div>
+            <div class="field-group">
+              <label for="analysisOtherCost">기타 비용</label>
+              <input id="analysisOtherCost" type="number" placeholder="0" min="0" required />
+            </div>
+
+            <button type="submit" class="primary-btn full-width">매물 분석하기</button>
+          </form>
+        </div>
+
+        <div id="analysisResult" class="panel result-panel hidden"></div>
+      </section>
+
+      <!-- 마이페이지: 서버에서 받은 통계와 분석 이력을 렌더링한다. -->
+      <section id="mypageSection" class="page-section">
+        <div id="mypageContent"></div>
+      </section>
+    </main>
+
+    <footer class="disclaimer" role="note" aria-label="분석 결과 안내">
+      AI 분석과 예상 시세는 오차가 있을 수 있으니 그대로 믿지 말고, 실제 매물과 거래 조건을 확인하세요.
+    </footer>
+
+    <!-- 캐시 버전은 배포 후 이전 스크립트가 남는 것을 방지한다. -->
+    <script src="script.js?v=search-score-sort-20261105-1"></script>
+  </body>
+</html>
