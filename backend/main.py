@@ -47,19 +47,26 @@ app = FastAPI(title="FlipCheck API", version="1.0.0")
 SESSION_COOKIE_NAME = "flipcheck_session"
 SESSION_TTL_SECONDS = 60 * 60 * 24 * 7
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+LOCAL_FRONTEND_ORIGINS = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:5501",
+    "http://127.0.0.1:5501",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+FRONTEND_ORIGINS = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv("FRONTEND_ORIGIN", "").split(",")
+    if origin.strip()
+]
+ALLOWED_ORIGINS = list(dict.fromkeys(LOCAL_FRONTEND_ORIGINS + FRONTEND_ORIGINS))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "http://localhost:5501",
-        "http://127.0.0.1:5501",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

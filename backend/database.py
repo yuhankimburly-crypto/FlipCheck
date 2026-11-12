@@ -4,7 +4,9 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "flipcheck.db")
+DB_PATH = os.getenv("DATABASE_PATH", "").strip() or os.path.join(
+    os.path.dirname(__file__), "flipcheck.db"
+)
 
 
 def get_connection() -> sqlite3.Connection:
