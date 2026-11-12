@@ -27,6 +27,26 @@ FlipCheck/
 
 ## 실행 방법
 
+### Node.js 및 npm으로 전체 앱 실행
+
+현재 프런트엔드는 Vite 개발 서버로 제공하고, `/api` 요청은 FastAPI 백엔드로 전달합니다. Node.js 22.12 이상과 Python 3.11 이상이 필요합니다.
+
+```powershell
+# 최초 한 번: Python 가상환경과 백엔드 의존성 설치
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+
+# 최초 한 번: 프런트엔드 개발 도구 설치
+npm.cmd install
+
+# 프런트엔드와 백엔드를 함께 실행
+npm.cmd run dev
+```
+
+브라우저에서 `http://127.0.0.1:5173`을 엽니다. 종료할 때는 터미널에서 `Ctrl+C`를 누릅니다. 가상환경을 사용하지 않는 경우에는 `python -m pip install -r backend\requirements.txt`로 백엔드 의존성을 설치하면 됩니다.
+
+Vite 개발 서버는 화면을 제공하고, `/api` 요청을 `127.0.0.1:8000`의 FastAPI 백엔드로 프록시합니다. `npm.cmd run build`는 정적 프런트엔드를 `dist/`에 빌드합니다. 백엔드도 별도로 배포해야 검색, 로그인, 관심 매물 등 API 기능을 사용할 수 있습니다.
+
 ### Backend
 
 ```bash
@@ -37,7 +57,7 @@ uvicorn main:app --reload
 
 Backend는 `http://localhost:8000`에서 실행됩니다.
 
-### Frontend
+### Frontend (기존 정적 서버 실행 방법)
 
 프로젝트 루트에서 정적 서버를 실행합니다.
 

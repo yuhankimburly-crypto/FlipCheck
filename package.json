@@ -1,0 +1,20 @@
+{
+  "name": "flipcheck",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others --names backend,frontend \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "python -m uvicorn main:app --app-dir backend --reload --host 127.0.0.1 --port 8000",
+    "dev:frontend": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7",
+    "vite": "^8.3.8"
+  }
+}

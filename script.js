@@ -1,6 +1,6 @@
 // 루트 UI의 검색·추천 가격·인증·계정 기능을 연결하는 브라우저 앱 진입점.
-// API 서버는 현재 페이지 호스트의 8000번 포트를 사용한다.
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+// Vite 개발 서버와 배포 프록시가 같은 호스트의 API 경로로 전달한다.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 // 화면 상세정보와 점수 표시에서 사용하는 데모 상품 데이터.
 const products = [
